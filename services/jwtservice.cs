@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -7,10 +8,10 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace UdemyApi.Services
 {
-    // Interface declaration directly above the implementation for ease of project setup
+    // Interface declaration defining the contract for token generation
     public interface IJwtService
     {
-        string GenerateToken(string userId, string email, int role);
+        string GenerateToken(string userId, string email, int role, string? instructorId = null);
     }
 
     public class JwtService : IJwtService
@@ -22,22 +23,28 @@ namespace UdemyApi.Services
             _configuration = configuration;
         }
 
-        public string GenerateToken(string userId, string email, int role)
+        public string GenerateToken(string userId, string email, int role, string? instructorId = null)
         {
-            // Pull settings out of your appsettings.json file
+            // Pull settings out of your appsettings.json configuration file
             var jwtSettings = _configuration.GetSection("JwtSettings");
             var secretKey = jwtSettings["SecretKey"] ?? "FallbackSecretKeyIfAppsettingsIsMissing2026!";
             
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
-            // Establish the identity claims payload
-            var claims = new[]
+            // Establish the mandatory base identity claims payload
+            var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.NameIdentifier, userId),
                 new Claim(ClaimTypes.Email, email),
                 new Claim(ClaimTypes.Role, role.ToString()) // Accommodates your (0, 1, 2) role management structure
             };
+
+            // Dynamically inject the InstructorId claim if it is provided
+            if (!string.IsNullOrEmpty(instructorId))
+            {
+                claims.Add(new Claim("InstructorId", instructorId));
+            }
 
             var expiryMinutes = double.TryParse(jwtSettings["ExpiryInMinutes"], out var minutes) ? minutes : 60;
 
