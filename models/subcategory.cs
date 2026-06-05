@@ -1,8 +1,12 @@
-public class Subcategory
+namespace UdemyBackend.Models
 {
-    public int Id { get; set; }
-    public string Name { get; set; }
-    public int CategoryId { get; set; }
-    public Category Category { get; set; }
-    public ICollection<Course> Courses { get; set; }
+    public class Subcategory
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public int CategoryId { get; set; }
+        public Category Category { get; set; }
+        public ICollection<Course> Courses { get; set; }
+    }
+
 }
