@@ -2,7 +2,7 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using UdemyApi.Data;
+using UdemyBackend.Data;
 using UdemyApi.Dtos;
 
 namespace UdemyApi.Controllers
@@ -31,27 +31,27 @@ namespace UdemyApi.Controllers
             var user = await _context.Users
                 .Include(u => u.InstructorProfile) // Assuming navigation properties exist in models
                 .Include(u => u.StudentProfile)
-                .FirstOrDefaultAsync(u => u.UserId == userId);
+                .FirstOrDefaultAsync(u => u.Id == userId);
 
             if (user == null) return NotFound(new { message = "User profile not found." });
 
             var profileDto = new UserProfileDto
             {
-                UserId = user.UserId,
+                UserId = user.Id,
                 FullName = user.FullName,
                 Email = user.Email,
-                SystemRole = user.SystemRole,
+                SystemRole = user.Role,
                 CreatedAt = user.CreatedAt,
                 InstructorDetails = user.InstructorProfile != null ? new InstructorProfileDto
                 {
-                    InstructorId = user.InstructorProfile.InstructorId,
-                    Headline = user.InstructorProfile.Headline,
+                    InstructorId = user.InstructorProfile.Id,
+                    Headline = null,
                     Biography = user.InstructorProfile.Biography,
-                    ProfilePictureUrl = user.InstructorProfile.ProfilePictureUrl
+                    ProfilePictureUrl = user.ProfilePicture
                 } : null,
                 StudentDetails = user.StudentProfile != null ? new StudentProfileDto
                 {
-                    StudentId = user.StudentProfile.StudentId
+                    StudentId = user.StudentProfile.Id
                 } : null
             };
 
@@ -65,7 +65,7 @@ namespace UdemyApi.Controllers
             if (userIdClaim == null) return Unauthorized();
 
             int userId = int.Parse(userIdClaim);
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.UserId == userId);
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
 
             if (user == null) return NotFound();
 

@@ -2,7 +2,7 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using UdemyApi.Data;
+using UdemyBackend.Data;
 using UdemyApi.Dtos;
 
 namespace UdemyApi.Controllers
@@ -28,13 +28,13 @@ namespace UdemyApi.Controllers
             int userId = int.Parse(userIdClaim);
 
             // Fetch the specific instructor entity tied to this logged-in account
-            var instructor = await _context.Instructors.FirstOrDefaultAsync(i => i.UserId == userId);
+            var instructor = await _context.Instructors.Include(i => i.User).FirstOrDefaultAsync(i => i.UserId == userId);
             if (instructor == null) return NotFound(new { message = "Instructor entry context missing." });
 
-            // Update specific teacher resume data structures
-            instructor.Headline = updateDto.Headline;
             instructor.Biography = updateDto.Biography;
-            instructor.ProfilePictureUrl = updateDto.ProfilePictureUrl;
+            if (instructor.User != null) {
+                instructor.User.ProfilePicture = updateDto.ProfilePictureUrl;
+            }
 
             await _context.SaveChangesAsync();
 

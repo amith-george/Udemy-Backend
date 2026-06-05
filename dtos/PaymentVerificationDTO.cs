@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace YourProject.DTOs
+namespace UdemyApi.DTOs
 {
     public class PaymentVerificationDTO
     {

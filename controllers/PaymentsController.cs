@@ -5,9 +5,9 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using Razorpay.Api; 
-using UdemyApi.Data;
+using UdemyBackend.Data;
 using UdemyApi.DTOs;
-using UdemyApi.Models;
+using UdemyBackend.Models;
 
 namespace UdemyApi.Controllers
 {
@@ -16,10 +16,10 @@ namespace UdemyApi.Controllers
     [Route("api/[controller]")]
     public class PaymentsController : ControllerBase
     {
-        private readonly AppDbContext _context;
+        private readonly ApplicationDbContext _context;
         private readonly IConfiguration _configuration;
 
-        public PaymentsController(AppDbContext context, IConfiguration configuration)
+        public PaymentsController(ApplicationDbContext context, IConfiguration configuration)
         {
             _context = context;
             _configuration = configuration;
@@ -29,9 +29,11 @@ namespace UdemyApi.Controllers
         public async Task<IActionResult> CreateCheckoutOrder()
         {
             var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value!);
+            var student = await _context.Students.FirstOrDefaultAsync(s => s.UserId == userId);
+            if (student == null) return BadRequest(new { message = "Student profile not found." });
 
             var cartItems = await _context.Carts
-                .Where(c => c.UserId == userId)
+                .Where(c => c.StudentId == student.Id)
                 .Include(c => c.Course) 
                 .ToListAsync();
 
@@ -90,8 +92,11 @@ namespace UdemyApi.Controllers
             {
                 try
                 {
+                    var student = await _context.Students.FirstOrDefaultAsync(s => s.UserId == userId);
+                    if (student == null) return BadRequest(new { message = "Student profile not found." });
+
                     var cartItems = await _context.Carts
-                        .Where(c => c.UserId == userId)
+                        .Where(c => c.StudentId == student.Id)
                         .Include(c => c.Course)
                         .ToListAsync();
 
@@ -100,24 +105,24 @@ namespace UdemyApi.Controllers
 
                     decimal totalAmount = cartItems.Sum(item => item.Course.Price);
 
-                    var payment = new PaymentRecord
-                    {
-                        UserId = userId,
-                        RazorpayOrderId = model.RazorpayOrderId,
-                        RazorpayPaymentId = model.RazorpayPaymentId,
-                        Amount = totalAmount,
-                        Status = "Success",
-                        PaymentDate = DateTime.UtcNow
-                    };
-                    _context.PaymentRecords.Add(payment);
-
                     foreach (var item in cartItems)
                     {
+                        var payment = new UdemyBackend.Models.Payment
+                        {
+                            StudentId = student.Id,
+                            CourseId = item.CourseId,
+                            Amount = item.Course.Price,
+                            GatewayTransactionId = model.RazorpayPaymentId,
+                            Status = "Success",
+                            ProcessedAt = DateTime.UtcNow
+                        };
+                        _context.Payments.Add(payment);
+
                         var enrollment = new Enrollment
                         {
-                            UserId = userId,
+                            StudentId = student.Id,
                             CourseId = item.CourseId,
-                            EnrollmentDate = DateTime.UtcNow,
+                            EnrolledAt = DateTime.UtcNow,
                             ProgressPercentage = 0 
                         };
                         _context.Enrollments.Add(enrollment);

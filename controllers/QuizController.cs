@@ -29,7 +29,7 @@ namespace UdemyBackend.Controllers {
                 if (dbAnswer != null && dbAnswer.IsCorrect) {
                     var question = await _context.Questions.FindAsync(dbAnswer.QuestionId);
                     if (question != null) {
-                        totalScore += question.Points; 
+                        totalScore += 1; 
                     }
                 }
             }

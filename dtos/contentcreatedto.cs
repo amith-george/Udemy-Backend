@@ -17,10 +17,10 @@ namespace UdemyBackend.DTOs.Content
         [Required(ErrorMessage = "Course ID is required")]
         public int CourseId { get; set; }
 
-        public IFormFile VideoUpload { get; set; }
+        public IFormFile? VideoUpload { get; set; }
 
         public string VideoUrl { get; set; }
 
-        public IFormFile ResourceFileUpload { get; set; }
+        public IFormFile? ResourceFileUpload { get; set; }
     }
 }

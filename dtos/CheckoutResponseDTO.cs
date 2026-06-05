@@ -1,4 +1,4 @@
-namespace YourProject.DTOs
+namespace UdemyApi.DTOs
 {
     public class CheckoutResponseDTO
     {

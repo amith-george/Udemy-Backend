@@ -32,9 +32,9 @@ namespace UdemyBackend.Controllers {
             enrollment.ProgressPercentage = dto.NewProgressPercentage;
 
             if (enrollment.ProgressPercentage >= 100) {
-                if (!enrollment.IsCompleted) {
-                    enrollment.IsCompleted = true;
-                    var newCert = new Certificate { EnrollmentId = enrollment.Id };
+                bool hasCert = await _context.Certificates.AnyAsync(c => c.StudentId == enrollment.StudentId && c.CourseId == enrollment.CourseId);
+                if (!hasCert) {
+                    var newCert = new Certificate { StudentId = enrollment.StudentId, CourseId = enrollment.CourseId, IssuedAt = DateTime.UtcNow, CertificateNumber = Guid.NewGuid().ToString(), DocumentUrl = "" };
                     _context.Certificates.Add(newCert);
                 }
             }

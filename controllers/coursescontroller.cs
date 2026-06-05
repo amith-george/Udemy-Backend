@@ -111,7 +111,7 @@ namespace UdemyBackend.Controllers
             var instructor = await GetAuthorizedInstructorAsync();
             if (instructor == null) 
             {
-                return Forbid("Only registered instructors can create courses.");
+                return StatusCode(403, new { message = "Only registered instructors can create courses." });
             }
 
             string savedFileUrl = await SaveThumbnailAsync(dto.ThumbnailImage);
@@ -144,12 +144,12 @@ namespace UdemyBackend.Controllers
             if (course == null) return NotFound(new { message = "Course not found." });
 
             var instructor = await GetAuthorizedInstructorAsync();
-            if (instructor == null) return Forbid("Only registered instructors can modify courses.");
+            if (instructor == null) return StatusCode(403, new { message = "Only registered instructors can modify courses." });
 
             // SECURITY: Ensure the person trying to update the course actually owns it
             if (course.InstructorId != instructor.Id)
             {
-                return Forbid("You do not have permission to modify this course.");
+                return StatusCode(403, new { message = "You do not have permission to modify this course." });
             }
 
             course.Title = dto.Title;
@@ -180,12 +180,12 @@ namespace UdemyBackend.Controllers
             if (course == null) return NotFound(new { message = "Course not found." });
 
             var instructor = await GetAuthorizedInstructorAsync();
-            if (instructor == null) return Forbid("Only registered instructors can delete courses.");
+            if (instructor == null) return StatusCode(403, new { message = "Only registered instructors can delete courses." });
 
             // SECURITY: Ensure the person trying to delete the course actually owns it
             if (course.InstructorId != instructor.Id)
             {
-                return Forbid("You do not have permission to delete this course.");
+                return StatusCode(403, new { message = "You do not have permission to delete this course." });
             }
 
             DeleteThumbnail(course.ThumbnailUrl);

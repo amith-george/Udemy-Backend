@@ -73,7 +73,7 @@ namespace UdemyBackend.Controllers
         public async Task<ActionResult<SectionDto>> CreateSection([FromBody] SectionCreateDto dto)
         {
             var instructor = await GetAuthorizedInstructorAsync();
-            if (instructor == null) return Forbid("Only registered instructors can create sections.");
+            if (instructor == null) return StatusCode(403, new { message = "Only registered instructors can create sections." });
 
             // SECURITY: Ensure the parent course exists AND belongs to this instructor
             var parentCourse = await _context.Courses.FindAsync(dto.CourseId);
@@ -81,7 +81,7 @@ namespace UdemyBackend.Controllers
             
             if (parentCourse.InstructorId != instructor.Id)
             {
-                return Forbid("You do not have permission to add sections to this course.");
+                return StatusCode(403, new { message = "You do not have permission to add sections to this course." });
             }
 
             var section = new Section
@@ -118,12 +118,12 @@ namespace UdemyBackend.Controllers
             if (section == null) return NotFound(new { message = "Section not found." });
 
             var instructor = await GetAuthorizedInstructorAsync();
-            if (instructor == null) return Forbid("Only registered instructors can modify sections.");
+            if (instructor == null) return StatusCode(403, new { message = "Only registered instructors can modify sections." });
 
             // SECURITY: Check ownership through the loaded parent course
             if (section.Course.InstructorId != instructor.Id)
             {
-                return Forbid("You do not have permission to modify this section.");
+                return StatusCode(403, new { message = "You do not have permission to modify this section." });
             }
 
             section.Title = dto.Title;
@@ -147,11 +147,11 @@ namespace UdemyBackend.Controllers
             if (section == null) return NotFound(new { message = "Section not found." });
 
             var instructor = await GetAuthorizedInstructorAsync();
-            if (instructor == null) return Forbid("Only registered instructors can delete sections.");
+            if (instructor == null) return StatusCode(403, new { message = "Only registered instructors can delete sections." });
 
             if (section.Course.InstructorId != instructor.Id)
             {
-                return Forbid("You do not have permission to delete this section.");
+                return StatusCode(403, new { message = "You do not have permission to delete this section." });
             }
 
             _context.Sections.Remove(section);

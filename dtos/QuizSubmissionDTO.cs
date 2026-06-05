@@ -6,4 +6,7 @@ namespace UdemyBackend.DTO {
         public int EnrollmentId { get; set; }
         public List<QuestionAnswerDTO> Answers { get; set; } = new();
     }
+    public class QuestionAnswerDTO {
+        public int SelectedAnswerId { get; set; }
+    }
 }

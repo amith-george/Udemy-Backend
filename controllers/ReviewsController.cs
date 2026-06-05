@@ -29,10 +29,10 @@ namespace UdemyBackend.Controllers {
             // 2. Map DTO to Model
             var review = new Review {
                 CourseId = reviewDto.CourseId,
-                UserId = reviewDto.StudentId, // The Review model has UserId, while DTO has StudentId
+                StudentId = reviewDto.StudentId, 
                 Rating = reviewDto.Rating,
-                Comment = reviewDto.Comment,
-                CreatedAt = DateTime.UtcNow
+                Feedback = reviewDto.Comment,
+                PostedAt = DateTime.UtcNow
             };
 
             // 3. Save to database

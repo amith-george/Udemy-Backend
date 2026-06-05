@@ -2,9 +2,9 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
-using UdemyApi.Data;
+using UdemyBackend.Data;
 using UdemyApi.DTOs;
-using UdemyApi.Models;
+using UdemyBackend.Models;
 
 namespace UdemyApi.Controllers
 {
@@ -13,9 +13,9 @@ namespace UdemyApi.Controllers
     [Route("api/[controller]")]
     public class PayoutsController : ControllerBase
     {
-        private readonly AppDbContext _context;
+        private readonly ApplicationDbContext _context;
 
-        public PayoutsController(AppDbContext context)
+        public PayoutsController(ApplicationDbContext context)
         {
             _context = context;
         }
@@ -23,7 +23,10 @@ namespace UdemyApi.Controllers
         [HttpGet("history")]
         public async Task<IActionResult> GetPayoutHistory()
         {
-            var instructorId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value!);
+            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value!);
+            var instructor = await _context.Instructors.FirstOrDefaultAsync(i => i.UserId == userId);
+            if (instructor == null) return Unauthorized();
+            var instructorId = instructor.Id;
 
             var history = await _context.PayoutHistories
                 .Where(p => p.InstructorId == instructorId)
@@ -36,17 +39,21 @@ namespace UdemyApi.Controllers
         [HttpPost("request")]
         public async Task<IActionResult> RequestPayout([FromBody] InstructorPayoutDTO model)
         {
-            var instructorId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value!);
+            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value!);
+            var instructor = await _context.Instructors.FirstOrDefaultAsync(i => i.UserId == userId);
+            if (instructor == null) return Unauthorized();
+            var instructorId = instructor.Id;
 
             if (model.Amount <= 0) 
                 return BadRequest(new { message = "Payout amount must be greater than zero." });
 
+            instructor.BankAccountNumber = model.BankAccountNumber;
+            instructor.IfscCode = model.IfscCode;
+            
             var payout = new PayoutHistory
             {
                 InstructorId = instructorId,
-                Amount = model.Amount,
-                BankAccountNumber = model.BankAccountNumber,
-                IfscCode = model.IfscCode,
+                AmountPaid = model.Amount,
                 Status = "Processed",
                 PayoutDate = DateTime.UtcNow
             };

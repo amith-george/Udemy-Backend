@@ -82,13 +82,13 @@ namespace UdemyBackend.Controllers
         public async Task<ActionResult<ContentDto>> CreateContent([FromForm] ContentCreateDto dto)
         {
             var instructor = await GetAuthorizedInstructorAsync();
-            if (instructor == null) return Forbid("Only registered instructors can add content.");
+            if (instructor == null) return StatusCode(403, new { message = "Only registered instructors can add content." });
 
             // SECURITY: Verify the instructor owns the course this content is being added to
             var course = await _context.Courses.FindAsync(dto.CourseId);
             if (course == null || course.InstructorId != instructor.Id)
             {
-                return Forbid("You do not have permission to add content to this course.");
+                return StatusCode(403, new { message = "You do not have permission to add content to this course." });
             }
 
             // INTEGRITY: Verify the target section actually belongs to the target course
@@ -117,8 +117,8 @@ namespace UdemyBackend.Controllers
                 Description = dto.Description,
                 SectionId = dto.SectionId,
                 CourseId = dto.CourseId,
-                VideoUrl = savedVideoUrl,
-                FilePath = savedResourcePath
+                VideoUrl = savedVideoUrl ?? "",
+                FilePath = savedResourcePath ?? ""
             };
 
             _context.Contents.Add(content);
@@ -148,13 +148,13 @@ namespace UdemyBackend.Controllers
             if (content == null) return NotFound(new { message = "Content not found." });
 
             var instructor = await GetAuthorizedInstructorAsync();
-            if (instructor == null) return Forbid("Only registered instructors can modify content.");
+            if (instructor == null) return StatusCode(403, new { message = "Only registered instructors can modify content." });
 
             // SECURITY: Verify ownership via the CourseId
             var course = await _context.Courses.FindAsync(content.CourseId);
             if (course.InstructorId != instructor.Id)
             {
-                return Forbid("You do not have permission to modify this content.");
+                return StatusCode(403, new { message = "You do not have permission to modify this content." });
             }
 
             // Update basic text fields
@@ -196,12 +196,12 @@ namespace UdemyBackend.Controllers
             if (content == null) return NotFound(new { message = "Content not found." });
 
             var instructor = await GetAuthorizedInstructorAsync();
-            if (instructor == null) return Forbid("Only registered instructors can delete content.");
+            if (instructor == null) return StatusCode(403, new { message = "Only registered instructors can delete content." });
 
             var course = await _context.Courses.FindAsync(content.CourseId);
             if (course.InstructorId != instructor.Id)
             {
-                return Forbid("You do not have permission to delete this content.");
+                return StatusCode(403, new { message = "You do not have permission to delete this content." });
             }
 
             // Clean up the physical files from the hard drive

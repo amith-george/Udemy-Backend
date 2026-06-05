@@ -109,6 +109,35 @@ namespace UdemyBackend.Controllers
             return CreatedAtAction(nameof(GetCategory), new { id = category.Id }, createdDto);
         }
 
+        // POST: api/categories/subcategories
+        [HttpPost("subcategories")]
+        public async Task<ActionResult<SubcategoryDto>> CreateSubcategory([FromBody] SubcategoryCreateDto dto)
+        {
+            var categoryExists = await _context.Categories.AnyAsync(c => c.Id == dto.CategoryId);
+            if (!categoryExists)
+            {
+                return BadRequest(new { message = "Parent Category not found." });
+            }
+
+            var subcategory = new Subcategory
+            {
+                Name = dto.Name,
+                CategoryId = dto.CategoryId
+            };
+
+            _context.Subcategories.Add(subcategory);
+            await _context.SaveChangesAsync();
+
+            var createdDto = new SubcategoryDto
+            {
+                Id = subcategory.Id,
+                Name = subcategory.Name,
+                CategoryId = subcategory.CategoryId
+            };
+
+            return Ok(createdDto);
+        }
+
         // PUT: api/categories/5
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateCategory(int id, [FromBody] CategoryCreateDto dto)

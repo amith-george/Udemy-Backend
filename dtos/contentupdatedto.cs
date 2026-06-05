@@ -12,11 +12,11 @@ namespace UdemyBackend.DTOs.Content
         public string Description { get; set; }
 
         // Optional: Only provided if the instructor is replacing the existing video
-        public IFormFile VideoUpload { get; set; }
+        public IFormFile? VideoUpload { get; set; }
 
         public string VideoUrl { get; set; }
 
         // Optional: Only provided if replacing the existing downloadable resource
-        public IFormFile ResourceFileUpload { get; set; }
+        public IFormFile? ResourceFileUpload { get; set; }
     }
 }
