@@ -10,11 +10,11 @@ namespace UdemyBackend.Models
         public bool IsActive { get; set; }
         public string otp {get; set; }
         public DateTime? OtpExpiryTime { get; set; }
-        public int Role { get; set; } 
+        public int Role { get; set; }
         public DateTime CreatedAt { get; set; }
-
+ 
         public Student StudentProfile { get; set; }
         public Instructor InstructorProfile { get; set; }
     }
-
+ 
 }
